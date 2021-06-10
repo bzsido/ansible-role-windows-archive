@@ -1,0 +1,7 @@
+---
+dependencies: []
+
+galaxy_info:
+  author: Balazs Zsido
+  min_ansible_version: 2.10
+  galaxy_tags: []

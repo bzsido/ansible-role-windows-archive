@@ -1,0 +1,35 @@
+---
+# See possible variables, default variables and short explanation below
+# Variables can be overridden using group_vars or with the --extra-vars/-e ansible-playbook flag
+
+# Define these vars in the playbook or with a survey:
+# For more details see documentation for win_find ansible module and the Compress-Archive PS command
+
+# List of paths of directories to search for files or folders to be archived - can be a single path or a list of paths
+# windows_archive_source_paths: C:/Path/to/folder
+
+# Type of file to search for - can be file or directory
+# windows_archive_file_type: file
+
+# Should the role recursively descend into the directory looking for files or folders?
+windows_archive_recurse: no
+
+# Should the role match files/folders using regex or powershell pattern?
+windows_archive_use_regex: no
+
+# Patterns to compare filenames with
+# windows_archive_patterns: .+
+
+# Select files or folders whose age is equal to or greater than the specified time
+# Use a negative age to find files equal to or less than the specified time.
+# e.g. "2s", "10d", 1w"
+# windows_archive_age: "1d"
+
+# Choose the file property against which we compare - atime/ctime/mtime
+windows_archive_age_stamp: mtime
+
+# Choose if you want to keep the original files after archiving them - yes/no
+# windows_archive_keep_source: no
+
+# The destination zip file to store the selected content. 
+# windows_archive_dest_file: C:/Path/to/file.zip

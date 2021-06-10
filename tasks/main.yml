@@ -1,0 +1,41 @@
+---
+- name: Find files to archive
+  ansible.windows.win_find:
+    paths: "{{ windows_archive_source_paths }}"
+    file_type: "{{ windows_archive_file_type }}"
+    recurse: "{{ windows_archive_recurse }}"
+    patterns: "{{ windows_archive_patterns }}"
+    use_regex: "{{ windows_archive_use_regex }}"
+    age: "{{ windows_archive_age }}"
+    age_stamp: "{{ windows_archive_age_stamp }}"
+    # add to aviod error "win_find failed to check some files, these files were ignored"
+    get_checksum: no
+  register: windows_archive_winfind_output
+
+- name: Creating a comma-separated, quoted list of the full path of all matches
+  ansible.builtin.set_fact:
+    windows_archive_list: "{{ windows_archive_winfind_output | json_query('files[*].path') | flatten | unique }}"
+
+- name: Compress all the matching files
+  # use LiteralPath instead of Path to avoid problem with special characters
+  ansible.windows.win_shell: |
+    $files = $input | Out-String | ConvertFrom-Json
+    Compress-Archive {{ ansible_check_mode | ternary('-WhatIf', '') }} -Verbose -LiteralPath $files -DestinationPath {{ windows_archive_dest_file }}
+  args:
+    stdin: "{{ windows_archive_list | to_json }}"
+  # Turning off check_mode, using -WhatIf instead to get output in dry run mode
+  check_mode: no
+  when: windows_archive_list != []
+
+- name: Delete all source files, if required
+  # use LiteralPath instead of Path to avoid problem with special characters
+  ansible.windows.win_shell: |
+    $files = $input | Out-String | ConvertFrom-Json
+    Remove-Item {{ ansible_check_mode | ternary('-WhatIf', '') }} -Verbose -LiteralPath $files
+  args:
+    stdin: "{{ windows_archive_list | to_json }}"
+  # Turning off check_mode, using -WhatIf instead to get output in dry run mode
+  check_mode: no
+  when:
+    - not windows_archive_keep_source
+    - windows_archive_list != []
